@@ -29,6 +29,7 @@ GESTOS = {
     ord('3'): "cejasLevantadas",
     ord('4'): "ceñoFruncido",
     ord('5'): "comisurasLabialesExtendidas",
+    ord('6'): "neutro"
 }
 LENTES = {
     ord('s'): "lentes",
@@ -73,7 +74,7 @@ def draw_hud(frame, sujeto, gesto, lentes, angulo, recording, can_change):
     y += 22
     cv2.putText(frame, f"Gesto: {gesto} | Lentes: {lentes} | Angulo: {angulo}", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1, cv2.LINE_AA)
     y += 22
-    cambios_txt = "Puedes cambiar etiquetas (1..5, s/n, l/o)" if can_change else "GRABANDO: no puedes cambiar etiquetas"
+    cambios_txt = "Puedes cambiar etiquetas (1..6, s/n, l/o)" if can_change else "GRABANDO: no puedes cambiar etiquetas"
     cv2.putText(frame, cambios_txt, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200,200,200), 1, cv2.LINE_AA)
 
     if recording:
@@ -129,7 +130,7 @@ def main():
     show_hud = True
 
     print("\nControles:")
-    print("  1..5  -> gesto | 1: guiñoDerecho, 2: guiñoIzquierdo, 3: cejasLevantadas, 4: ceñoFruncido, 5: comisurasLabialesExtendidas")
+    print("  1..5  -> gesto | 1: guiñoDerecho, 2: guiñoIzquierdo, 3: cejasLevantadas, 4: ceñoFruncido, 5: comisurasLabialesExtendidas, 6: neutro")
     print("  s/n   -> lentes/sinLentes")
     print("  l/o   -> laptop/ojos")
     print("  i     -> iniciar grabación")
