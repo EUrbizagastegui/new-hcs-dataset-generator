@@ -126,6 +126,8 @@ def main():
 
     recording = False
     writer = None
+    current_out_path = None
+    session_clips_stack = []
     frozen_gesto = frozen_lentes = frozen_angulo = None
     show_hud = True
 
@@ -135,6 +137,7 @@ def main():
     print("  l/o   -> laptop/ojos")
     print("  i     -> iniciar grabación")
     print("  f     -> finalizar grabación")
+    print("  b     -> borrar el último clip guardado en esta sesión (cuando NO estás grabando)")
     print("  e     -> salir\n")
 
     try:
@@ -175,16 +178,32 @@ def main():
                     frozen_angulo = current_angulo
 
                     filename = build_filename(sujeto, frozen_gesto, frozen_lentes, frozen_angulo)
-                    out_path = OUTPUT_DIR / filename
+                    current_out_path = OUTPUT_DIR / filename
 
-                    writer = create_writer(out_path, FRAME_WIDTH, FRAME_HEIGHT, FPS)
+                    writer = create_writer(current_out_path, FRAME_WIDTH, FRAME_HEIGHT, FPS)
                     if not writer or not writer.isOpened():
                         print("No se pudo iniciar el escritor de video. Verifica codecs/permisos.")
                         writer = None
+                        current_out_path = None
                         continue
 
                     recording = True
-                    print(f"Inició grabación -> {out_path.name}")
+                    print(f"Inició grabación -> {current_out_path.name}")
+
+                # Borrar último clip guardado (LIFO)
+                elif key in (ord('b'), ord('B')):
+                    if not session_clips_stack:
+                        print("No hay clips guardados para borrar.")
+                        continue
+                    to_delete = session_clips_stack.pop()
+                    try:
+                        if to_delete.exists():
+                            to_delete.unlink()
+                            print(f"Clip borrado: {to_delete.name}")
+                        else:
+                            print(f"El archivo ya no existe: {to_delete.name}")
+                    except Exception as ex:
+                        print(f"No se pudo borrar {to_delete.name}: {ex}")
 
             else:
                 if key in (ord('f'), ord('F')):
@@ -193,7 +212,11 @@ def main():
                     if writer is not None:
                         writer.release()
                         writer = None
-                    print("Finalizó grabación (archivo cerrado).")
+                    if current_out_path is not None:
+                        # Registrar el clip finalizado en la pila de la sesión
+                        session_clips_stack.append(current_out_path)
+                        print(f"Finalizó grabación (archivo cerrado): {current_out_path.name}")
+                        current_out_path = None
 
     finally:
         cap.release()
